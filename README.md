@@ -46,6 +46,22 @@ Open Settings (⚙︎) and paste a free API key from [themoviedb.org](https://ww
 
 Letterboxd's API is approval-only (apply at [letterboxd.com/api-beta](https://letterboxd.com/api-beta/)), so true "Sign in with Letterboxd" OAuth requires being granted access first. Until then, Settings supports the official export path: Letterboxd → Settings → Data → Export, then upload `watchlist.csv` (→ queue) or `watched.csv` (→ watched + cards) here.
 
+## Showtimes & ticketing roadmap
+
+The business model: affiliate commission on chain tickets from day one, direct ticket sales for indie partner theaters as the moat. `src/data/providers.ts` is the integration layer — every provider activates automatically once its credential is pasted in Settings → Integrations:
+
+| Provider | Gets us | How to obtain |
+|---|---|---|
+| TMDB now-playing | Real in-theater titles | ✅ Live (shared club key) |
+| MovieGlu | Real showtimes/theaters near members | Free dev account at developer.movieglu.com |
+| AMC API | AMC showtimes + ticket URLs | Apply at developers.amctheatres.com |
+| Fandango affiliate | ~commission per chain ticket | Join via impact.com |
+| Atom Tickets affiliate | Commission per ticket | Their affiliate network (Impact/CJ) |
+| Veezi | **Direct sales** for indie partner theaters | Each partner shares an API token from their Veezi back office |
+| Gracenote | Full licensed market feed | Nielsen enterprise sales — at scale |
+
+The Matinees tab features the Indie Partner Program with per-theater status and a partnerships CTA (`partners@matineefilm.club` is a placeholder — swap in the real inbox in `src/data/providers.ts`).
+
 ## Layout
 
 ```

@@ -2,26 +2,18 @@ import { useEffect, useMemo, useState } from 'react';
 import { useClub } from '../state/store';
 import { Film, filmById, registerFilms } from '../data/catalog';
 import { filmFromTmdb, nowPlayingTmdb } from '../data/tmdb';
+import { ticketLinks, movieGluNowShowing, INDIE_PROGRAM } from '../data/providers';
 import { dailyProgram, takenSeats, todayKey, MATINEE_PRICE, Showtime, THEATERS } from '../data/theaters';
 import { Poster } from '../components/Poster';
 
 const ROWS = ['A', 'B', 'C', 'D', 'E', 'F'];
 const COLS = [1, 2, 3, 4, 5, 6, 7, 8];
 
-/** Search deep links into the big chains' ticketing sites (Paradiso-style). */
-function partnerLinks(title: string) {
-  const q = encodeURIComponent(title);
-  return [
-    { name: 'Fandango', url: `https://www.fandango.com/search?q=${q}` },
-    { name: 'AMC', url: `https://www.amctheatres.com/search?q=${q}` },
-    { name: 'Regal', url: `https://www.regmovies.com/search?query=${q}` },
-  ];
-}
-
 export function Matinees() {
   const club = useClub();
   const today = todayKey();
   const [livePool, setLivePool] = useState<Film[] | null>(null);
+  const [mgCount, setMgCount] = useState<number | null>(null);
   const [theaterFilter, setTheaterFilter] = useState<string>('all');
   const [booking, setBooking] = useState<Showtime | null>(null);
   const [seats, setSeats] = useState<string[]>([]);
@@ -37,6 +29,9 @@ export function Matinees() {
         if (live) setLivePool(films);
       })
       .catch(() => { /* offline or no key — curated catalog stands in */ });
+    movieGluNowShowing().then((films) => {
+      if (live && films.length > 0) setMgCount(films.length);
+    });
     return () => { live = false; };
   }, []);
 
@@ -76,7 +71,8 @@ export function Matinees() {
         <p className="muted">
           Daylight shows only — every screening ends before 5 PM. Every ticket earns 200 reel points and a collector card.
           {livePool ? ' Now playing is live from TMDB this week.' : ''}
-          {' '}Seeing it at a chain instead? Use the AMC/Regal/Fandango links, then upload your stub in Earn for 150 pts.
+          {mgCount ? ` MovieGlu live: ${mgCount} films showing nearby.` : ''}
+          {' '}Seeing it at a chain instead? Use the ticket links, then upload your stub in Earn for 150 pts.
         </p>
       </header>
 
@@ -146,8 +142,17 @@ export function Matinees() {
                 <span className="muted">{s.theater.emoji} {s.theater.name} — {s.theater.perk}</span>
                 <span className="partner-links">
                   Also playing at:{' '}
-                  {partnerLinks(s.film.title).map((p) => (
-                    <a key={p.name} className="ext" href={p.url} target="_blank" rel="noreferrer">{p.name} ↗</a>
+                  {ticketLinks(s.film.title).map((p) => (
+                    <a
+                      key={p.name}
+                      className="ext"
+                      href={p.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      title={p.affiliate ? 'Affiliate link — the club earns on this ticket' : undefined}
+                    >
+                      {p.name}{p.affiliate ? ' ✦' : ''} ↗
+                    </a>
                   ))}
                 </span>
               </div>
@@ -157,6 +162,24 @@ export function Matinees() {
             </div>
           ))}
         </div>
+      )}
+
+      {!booking && (
+        <section className="card indie-card">
+          <h2>🏛️ Indie Partner Program</h2>
+          <p className="muted">{INDIE_PROGRAM.pitch}</p>
+          <ul className="indie-list">
+            {THEATERS.map((t) => (
+              <li key={t.id}>
+                <span>{t.emoji} <strong>{t.name}</strong> · {t.neighborhood}</span>
+                <span className="badge">{INDIE_PROGRAM.statuses[t.id] ?? 'In talks'}</span>
+              </li>
+            ))}
+          </ul>
+          <a className="btn ghost" href={`mailto:${INDIE_PROGRAM.contact}?subject=Partner my theater with Matinee Film Club`}>
+            Own a theater? Partner with the club ✉
+          </a>
+        </section>
       )}
 
       {club.tickets.length > 0 && !booking && (

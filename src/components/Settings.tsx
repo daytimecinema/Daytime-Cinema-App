@@ -1,6 +1,60 @@
 import { useRef, useState } from 'react';
 import { getTmdbKey, setTmdbKey } from '../data/tmdb';
+import { GRACENOTE_NOTE, PROVIDERS, getCfg, setCfg } from '../data/providers';
 import { useClub } from '../state/store';
+
+function Integrations() {
+  // bump to re-read configured() after saves
+  const [, setRev] = useState(0);
+  const [drafts, setDrafts] = useState<Record<string, string>>({});
+
+  return (
+    <section className="card">
+      <h2>🔌 Showtimes & ticketing integrations</h2>
+      <p className="muted">
+        Each provider switches on automatically when its credentials are pasted here (stored in this
+        browser only). Until then the club runs on TMDB now-playing + simulated matinee slots.
+      </p>
+      {PROVIDERS.map((p) => (
+        <div key={p.name} className="integration">
+          <div className="row-between">
+            <strong>
+              <span className={`status-dot ${p.configured() ? 'live' : ''}`} /> {p.name}
+            </strong>
+            <span className="muted">{p.role}</span>
+          </div>
+          <p className="muted">{p.setup}</p>
+          <div className="row-gap">
+            {p.fields.map((f) => (
+              <input
+                key={f.cfg}
+                className="search int-input"
+                placeholder={`${f.label} — ${f.placeholder}`}
+                value={drafts[f.cfg] ?? getCfg(f.cfg)}
+                onChange={(e) => setDrafts((d) => ({ ...d, [f.cfg]: e.target.value }))}
+              />
+            ))}
+            <button
+              className="btn ghost"
+              onClick={() => {
+                for (const f of p.fields) {
+                  if (f.cfg in drafts) setCfg(f.cfg, drafts[f.cfg]);
+                }
+                setRev((r) => r + 1);
+              }}
+            >
+              Save
+            </button>
+          </div>
+        </div>
+      ))}
+      <div className="integration">
+        <strong><span className="status-dot" /> Gracenote</strong>
+        <p className="muted">{GRACENOTE_NOTE}</p>
+      </div>
+    </section>
+  );
+}
 
 /** Parse a Letterboxd export CSV (watchlist.csv / watched.csv / diary.csv). */
 export function parseLetterboxdCsv(text: string): { name: string; year: number }[] {
@@ -118,6 +172,8 @@ export function Settings({ onClose }: { onClose: () => void }) {
           </div>
           {importMsg && <p className="muted">{importMsg}</p>}
         </section>
+
+        <Integrations />
 
         <section className="card">
           <h2>🧹 Reset</h2>
