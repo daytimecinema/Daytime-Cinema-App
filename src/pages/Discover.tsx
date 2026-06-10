@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react';
 import { FILMS, filmById } from '../data/catalog';
+import { filmFromTmdb, getTmdbKey, searchTmdb, TmdbResult } from '../data/tmdb';
 import { useClub } from '../state/store';
-import { Poster, RarityBadge } from '../components/Poster';
+import { Poster, RarityBadge, Stars } from '../components/Poster';
 
 type KindFilter = 'all' | 'film' | 'stage';
 
@@ -11,10 +12,33 @@ export function Discover() {
   const [kind, setKind] = useState<KindFilter>('all');
   const [genre, setGenre] = useState('all');
   const [toast, setToast] = useState<string | null>(null);
+  const [tmdbResults, setTmdbResults] = useState<TmdbResult[] | null>(null);
+  const [searching, setSearching] = useState(false);
+  const hasTmdb = !!getTmdbKey();
 
   const genres = useMemo(() => Array.from(new Set(FILMS.flatMap((f) => f.genres))).sort(), []);
 
-  const results = FILMS.filter((f) => {
+  async function runTmdbSearch() {
+    if (!q.trim()) return;
+    setSearching(true);
+    try {
+      setTmdbResults(await searchTmdb(q.trim()));
+    } catch {
+      setToast('TMDB search failed — check your API key in Settings (⚙︎).');
+    } finally {
+      setSearching(false);
+    }
+  }
+
+  function addTmdb(r: TmdbResult) {
+    const film = filmFromTmdb(r);
+    club.addCustomFilm(film);
+    club.enqueue(film.id);
+    setToast(`Added “${film.title}” (${film.year}) to your queue.`);
+  }
+
+  const allFilms = [...FILMS, ...club.customFilms];
+  const results = allFilms.filter((f) => {
     if (kind !== 'all' && f.kind !== kind) return false;
     if (genre !== 'all' && !f.genres.includes(genre)) return false;
     const needle = q.trim().toLowerCase();
@@ -41,12 +65,23 @@ export function Discover() {
       )}
 
       <div className="filters">
-        <input
-          className="search"
-          placeholder="Search titles, directors, cast…"
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-        />
+        <div className="row-gap search-row">
+          <input
+            className="search"
+            placeholder={hasTmdb ? 'Search the club — or all of TMDB…' : 'Search titles, directors, cast…'}
+            value={q}
+            onChange={(e) => { setQ(e.target.value); setTmdbResults(null); }}
+            onKeyDown={(e) => { if (e.key === 'Enter' && hasTmdb) runTmdbSearch(); }}
+          />
+          {hasTmdb && (
+            <button className="btn" onClick={runTmdbSearch} disabled={searching || !q.trim()}>
+              {searching ? 'Searching…' : 'TMDB ↵'}
+            </button>
+          )}
+        </div>
+        {!hasTmdb && (
+          <p className="muted">💡 Add a free TMDB key in Settings (⚙︎) to search every movie ever made and get real posters.</p>
+        )}
         <div className="chip-row">
           {(['all', 'film', 'stage'] as const).map((k) => (
             <button key={k} className={`chip ${kind === k ? 'on' : ''}`} onClick={() => setKind(k)}>
@@ -61,6 +96,24 @@ export function Discover() {
           </select>
         </div>
       </div>
+
+      {tmdbResults && (
+        <section>
+          <h2>TMDB results · {tmdbResults.length}</h2>
+          <div className="tmdb-grid">
+            {tmdbResults.map((r) => (
+              <div key={r.tmdbId} className="card tmdb-card">
+                {r.posterUrl
+                  ? <img className="tmdb-poster" src={r.posterUrl} alt={`${r.title} poster`} loading="lazy" />
+                  : <div className="tmdb-poster placeholder">🎬</div>}
+                <strong>{r.title}</strong>
+                <span className="muted">{r.year || '—'} <Stars score={r.vote * 10} /></span>
+                <button className="btn" onClick={() => addTmdb(r)}>+ Queue</button>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {club.queue.length > 0 && (
         <section>
@@ -98,11 +151,11 @@ export function Discover() {
                 <div className="film-card-body">
                   <div className="row-between">
                     <strong>{f.title}</strong>
-                    <span className="score">{f.score}</span>
+                    <Stars score={f.score} />
                   </div>
-                  <span className="muted">{f.year} · {f.runtime} min · {f.genres.join(' / ')}</span>
+                  <span className="muted">{f.year}{f.runtime ? ` · ${f.runtime} min` : ''}{f.genres.length ? ` · ${f.genres.join(' / ')}` : ''}</span>
                   <p className="synopsis">{f.synopsis}</p>
-                  <span className="muted">📺 {f.streamingOn.join(' · ')}</span>
+                  {f.streamingOn.length > 0 && <span className="muted">📺 {f.streamingOn.join(' · ')}</span>}
                   <div className="row-gap">
                     <RarityBadge film={f} />
                     {watched && <span className="badge">Watched ✓</span>}

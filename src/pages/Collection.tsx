@@ -51,6 +51,25 @@ export function Collection() {
         </div>
       )}
 
+      {club.customFilms.some((f) => (club.collection[f.id] ?? 0) > 0) && (
+        <section>
+          <h2 className="rarity-head-classic">Imports & Discoveries</h2>
+          <div className="binder-grid">
+            {club.customFilms
+              .filter((f) => (club.collection[f.id] ?? 0) > 0)
+              .map((f) => {
+                const count = club.collection[f.id] ?? 0;
+                return (
+                  <div key={f.id} className="binder-slot">
+                    <Poster film={f} />
+                    {count > 1 && <span className="count-pip">×{count}</span>}
+                  </div>
+                );
+              })}
+          </div>
+        </section>
+      )}
+
       {RARITY_ORDER.slice().reverse().map((rarity) => {
         const films = FILMS.filter((f) => f.rarity === rarity);
         if (films.length === 0) return null;

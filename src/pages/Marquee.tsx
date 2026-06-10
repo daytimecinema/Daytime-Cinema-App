@@ -70,7 +70,7 @@ export function Marquee({ go }: { go: (t: Tab) => void }) {
         <button className="tile" onClick={() => go('collection')}>
           <span className="tile-emoji">🃏</span>
           <strong>Card Binder</strong>
-          <span className="muted">{cardsOwned} / 33 collected</span>
+          <span className="muted">{cardsOwned} cards collected</span>
         </button>
         <button className="tile" onClick={() => go('rewards')}>
           <span className="tile-emoji">💰</span>

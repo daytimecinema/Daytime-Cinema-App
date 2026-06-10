@@ -34,6 +34,18 @@ npm run preview  # serve the production build
 
 No backend, no accounts: state lives in `localStorage`, the daily program and puzzle rotate deterministically by date, and the "stills" in Six Frames are CSS-rendered scenes, so no copyrighted imagery ships with the app.
 
+## Design
+
+The UI follows the Letterboxd design language: ink `#14181c` background, slate `#2c3440` panels, `#9ab` body text, the orange/green/blue accent dots, poster-first 2:3 grids, and green ★ scores.
+
+## Real movie data (TMDB)
+
+Open Settings (⚙︎) and paste a free API key from [themoviedb.org](https://www.themoviedb.org/settings/api) — the same database Letterboxd is built on. With a key set, the app fetches real poster art for the whole catalog (cached in `localStorage`) and Discover gains full TMDB search, so any movie ever made can be queued, watched, and collected. The key never leaves the browser. Without a key, the app falls back to its bundled CSS poster art.
+
+## Letterboxd
+
+Letterboxd's API is approval-only (apply at [letterboxd.com/api-beta](https://letterboxd.com/api-beta/)), so true "Sign in with Letterboxd" OAuth requires being granted access first. Until then, Settings supports the official export path: Letterboxd → Settings → Data → Export, then upload `watchlist.csv` (→ queue) or `watched.csv` (→ watched + cards) here.
+
 ## Layout
 
 ```

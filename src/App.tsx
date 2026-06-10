@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { ClubProvider, useClub } from './state/store';
+import { Settings } from './components/Settings';
 import { Marquee } from './pages/Marquee';
 import { Matinees } from './pages/Matinees';
 import { Discover } from './pages/Discover';
@@ -20,20 +21,26 @@ const TABS: { id: Tab; label: string; emoji: string }[] = [
 
 function Shell() {
   const [tab, setTab] = useState<Tab>('marquee');
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const club = useClub();
 
   return (
     <div className="shell">
       <header className="topbar">
         <div className="brand">
-          <span className="brand-mark">🎞️</span>
+          <span className="brand-dots"><i className="d1" /><i className="d2" /><i className="d3" /></span>
           <div>
             <strong>Matinee Film Club</strong>
             <span className="tagline">daylight cinema, collected</span>
           </div>
         </div>
-        <span className="points-chip">✨ {club.points.toLocaleString()} pts</span>
+        <div className="row-gap">
+          <span className="points-chip">{club.points.toLocaleString()} pts</span>
+          <button className="gear" onClick={() => setSettingsOpen(true)} title="Settings & connections">⚙︎</button>
+        </div>
       </header>
+
+      {settingsOpen && <Settings onClose={() => setSettingsOpen(false)} />}
 
       <main>
         {tab === 'marquee' && <Marquee go={setTab} />}

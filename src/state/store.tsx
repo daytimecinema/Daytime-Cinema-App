@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState, ReactNode } from 'react';
-import { FILMS, Film, filmById } from '../data/catalog';
+import { FILMS, Film, filmById, registerFilms } from '../data/catalog';
 import { todayKey, MATINEE_PRICE } from '../data/theaters';
 import { MAX_GUESSES, puzzleForDate } from '../data/frames';
 import { PACK_COST, PACK_SIZE, REWARDS } from '../data/rewards';
@@ -46,6 +46,7 @@ interface ClubState {
   redeemed: string[]; // reward ids, repeats allowed
   streak: number;
   lastVisit: string;
+  customFilms: Film[]; // added via TMDB search or Letterboxd import
 }
 
 const FRESH: ClubState = {
@@ -60,6 +61,7 @@ const FRESH: ClubState = {
   redeemed: [],
   streak: 1,
   lastVisit: todayKey(),
+  customFilms: [],
 };
 
 const KEY = 'matinee-film-club-v1';
@@ -68,7 +70,9 @@ function load(): ClubState {
   try {
     const raw = localStorage.getItem(KEY);
     if (!raw) return FRESH;
-    return { ...FRESH, ...(JSON.parse(raw) as ClubState) };
+    const state = { ...FRESH, ...(JSON.parse(raw) as ClubState) };
+    registerFilms(state.customFilms);
+    return state;
   } catch {
     return FRESH;
   }
@@ -89,6 +93,9 @@ export interface ClubApi extends ClubState {
   guessFrame(filmId: string): void;
   openPack(): Film[] | null;
   redeem(rewardId: string): boolean;
+  addCustomFilm(film: Film): void;
+  importLetterboxd(entries: { name: string; year: number }[], mode: 'queue' | 'watched'): number;
+  resetAll(): void;
 }
 
 const Ctx = createContext<ClubApi | null>(null);
@@ -226,6 +233,68 @@ export function ClubProvider({ children }: { children: ReactNode }) {
           return next;
         });
         return cards;
+      },
+
+      addCustomFilm(film) {
+        registerFilms([film]);
+        setState((s) =>
+          s.customFilms.some((f) => f.id === film.id) || FILMS.some((f) => f.id === film.id)
+            ? s
+            : { ...s, customFilms: [...s.customFilms, film] },
+        );
+      },
+
+      importLetterboxd(entries, mode) {
+        const slug = (t: string) => t.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+        const newFilms: Film[] = [];
+        const ids: string[] = [];
+        for (const e of entries) {
+          const existing =
+            [...FILMS, ...state.customFilms, ...newFilms].find(
+              (f) => f.title.toLowerCase() === e.name.toLowerCase() && (!e.year || !f.year || f.year === e.year),
+            );
+          if (existing) {
+            ids.push(existing.id);
+            continue;
+          }
+          const film: Film = {
+            id: `lb-${slug(e.name)}-${e.year || 'x'}`,
+            title: e.name, year: e.year, kind: 'film', genres: [], runtime: 0,
+            rated: '—', director: '—', cast: [], synopsis: '', score: 0, rarity: 'matinee',
+            streamingOn: [], poster: { from: '#2c3440', to: '#14181c', emoji: '🎬' },
+          };
+          newFilms.push(film);
+          ids.push(film.id);
+        }
+        registerFilms(newFilms);
+        setState((s) => {
+          let next: ClubState = { ...s, customFilms: [...s.customFilms, ...newFilms] };
+          if (mode === 'queue') {
+            const queue = [...next.queue];
+            for (const id of ids) if (!queue.includes(id) && !next.watched.includes(id)) queue.push(id);
+            next = { ...next, queue };
+          } else {
+            const watched = [...next.watched];
+            const collection = { ...next.collection };
+            for (const id of ids) {
+              if (!watched.includes(id)) {
+                watched.push(id);
+                collection[id] = (collection[id] ?? 0) + 1;
+              }
+            }
+            next = { ...next, watched, collection, queue: next.queue.filter((id) => !watched.includes(id)) };
+          }
+          next = addLedger(next, `Letterboxd import: ${ids.length} ${mode === 'queue' ? 'watchlist' : 'watched'} titles 📥`, 100);
+          return next;
+        });
+        return ids.length;
+      },
+
+      resetAll() {
+        try {
+          localStorage.removeItem(KEY);
+        } catch { /* ignore */ }
+        location.reload();
       },
 
       redeem(rewardId) {

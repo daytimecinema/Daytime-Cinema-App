@@ -15,6 +15,10 @@ export interface Film {
   rarity: Rarity;
   streamingOn: string[];
   poster: { from: string; to: string; emoji: string };
+  /** Override query when looking this title up on TMDB. */
+  tmdb?: string;
+  /** Real poster art URL (TMDB) when known. */
+  posterUrl?: string;
 }
 
 export const FILMS: Film[] = [
@@ -237,7 +241,7 @@ export const FILMS: Film[] = [
     poster: { from: '#dba111', to: '#1c1c1c', emoji: '⭐' },
   },
   {
-    id: 'nt-frankenstein', title: 'Frankenstein (NT Live)', year: 2011, kind: 'stage',
+    id: 'nt-frankenstein', tmdb: 'National Theatre Live: Frankenstein', title: 'Frankenstein (NT Live)', year: 2011, kind: 'stage',
     genres: ['Drama', 'Horror'], runtime: 130, rated: 'PG-13',
     director: 'Danny Boyle', cast: ['Benedict Cumberbatch', 'Jonny Lee Miller'],
     synopsis: 'The Creature opens its eyes on a bare stage and demands an answer from its maker, captured live at the National Theatre.',
@@ -245,7 +249,7 @@ export const FILMS: Film[] = [
     poster: { from: '#3c096c', to: '#80ffdb', emoji: '⚡' },
   },
   {
-    id: 'phantom-rah', title: 'The Phantom of the Opera at the Royal Albert Hall', year: 2011, kind: 'stage',
+    id: 'phantom-rah', tmdb: 'The Phantom of the Opera at the Royal Albert Hall', title: 'The Phantom of the Opera at the Royal Albert Hall', year: 2011, kind: 'stage',
     genres: ['Musical', 'Romance'], runtime: 137, rated: 'PG',
     director: 'Nick Morris & Laurence Connor', cast: ['Ramin Karimloo', 'Sierra Boggess'],
     synopsis: 'The music of the night fills the Royal Albert Hall for the 25th-anniversary staging of the masked legend.',
@@ -253,7 +257,7 @@ export const FILMS: Film[] = [
     poster: { from: '#10002b', to: '#c9184a', emoji: '🎭' },
   },
   {
-    id: 'newsies', title: 'Newsies: The Broadway Musical', year: 2017, kind: 'stage',
+    id: 'newsies', tmdb: 'Newsies: The Broadway Musical', title: 'Newsies: The Broadway Musical', year: 2017, kind: 'stage',
     genres: ['Musical', 'Family'], runtime: 149, rated: 'G',
     director: 'Jeff Calhoun & Brett Sullivan', cast: ['Jeremy Jordan', 'Kara Lindsay'],
     synopsis: 'The newsboys of 1899 leap, flip, and strike their way onto every front page, filmed live with the original star.',
@@ -261,7 +265,7 @@ export const FILMS: Film[] = [
     poster: { from: '#bc6c25', to: '#fefae0', emoji: '🗞️' },
   },
   {
-    id: 'kinky-boots', title: 'Kinky Boots: The Musical', year: 2019, kind: 'stage',
+    id: 'kinky-boots', tmdb: 'Kinky Boots: The Musical', title: 'Kinky Boots: The Musical', year: 2019, kind: 'stage',
     genres: ['Musical', 'Comedy'], runtime: 134, rated: 'PG-13',
     director: 'Brett Sullivan', cast: ['Matt Henry', 'Killian Donnelly'],
     synopsis: 'A failing shoe factory finds salvation in six-inch scarlet heels, filmed live in the West End.',
@@ -269,7 +273,7 @@ export const FILMS: Film[] = [
     poster: { from: '#d90429', to: '#ffccd5', emoji: '👢' },
   },
   {
-    id: 'fleabag-ntlive', title: 'Fleabag (NT Live)', year: 2019, kind: 'stage',
+    id: 'fleabag-ntlive', tmdb: 'National Theatre Live: Fleabag', title: 'Fleabag (NT Live)', year: 2019, kind: 'stage',
     genres: ['Comedy', 'Drama'], runtime: 80, rated: 'R',
     director: 'Vicky Jones', cast: ['Phoebe Waller-Bridge'],
     synopsis: 'One woman, one stool, and every terrible thought you were not supposed to hear out loud, live from Wyndham’s Theatre.',
@@ -277,7 +281,7 @@ export const FILMS: Film[] = [
     poster: { from: '#e85d75', to: '#2b2d42', emoji: '🐹' },
   },
   {
-    id: 'american-in-paris', title: 'An American in Paris: The Musical', year: 2018, kind: 'stage',
+    id: 'american-in-paris', tmdb: 'An American in Paris: The Musical', title: 'An American in Paris: The Musical', year: 2018, kind: 'stage',
     genres: ['Musical', 'Romance'], runtime: 138, rated: 'G',
     director: 'Christopher Wheeldon', cast: ['Robert Fairchild', 'Leanne Cope'],
     synopsis: 'A G.I. painter and a ballerina waltz through post-war Paris to Gershwin, filmed live in the West End.',
@@ -286,10 +290,22 @@ export const FILMS: Film[] = [
   },
 ];
 
+/** Films added at runtime (TMDB search, Letterboxd import). */
+const DYNAMIC = new Map<string, Film>();
+
+export function registerFilms(films: Film[]) {
+  for (const f of films) DYNAMIC.set(f.id, f);
+}
+
 export const filmById = (id: string): Film => {
-  const f = FILMS.find((x) => x.id === id);
-  if (!f) throw new Error(`Unknown film: ${id}`);
-  return f;
+  const f = FILMS.find((x) => x.id === id) ?? DYNAMIC.get(id);
+  if (f) return f;
+  // Stale id from an older import — render a harmless placeholder.
+  return {
+    id, title: 'Unknown title', year: 0, kind: 'film', genres: [], runtime: 0,
+    rated: '—', director: '—', cast: [], synopsis: '', score: 0, rarity: 'matinee',
+    streamingOn: [], poster: { from: '#2c3440', to: '#14181c', emoji: '🎬' },
+  };
 };
 
 export const RARITY_LABEL: Record<Rarity, string> = {
