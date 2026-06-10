@@ -79,9 +79,6 @@ export function Discover() {
             </button>
           )}
         </div>
-        {!hasTmdb && (
-          <p className="muted">💡 Add a free TMDB key in Settings (⚙︎) to search every movie ever made and get real posters.</p>
-        )}
         <div className="chip-row">
           {(['all', 'film', 'stage'] as const).map((k) => (
             <button key={k} className={`chip ${kind === k ? 'on' : ''}`} onClick={() => setKind(k)}>

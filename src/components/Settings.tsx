@@ -81,9 +81,10 @@ export function Settings({ onClose }: { onClose: () => void }) {
         <section className="card">
           <h2>🎬 Real movie data (TMDB)</h2>
           <p className="muted">
-            Paste a free API key from <strong>themoviedb.org</strong> (Settings → API) and the club
-            switches to real posters and full movie search — the same database Letterboxd uses.
-            The key stays in your browser only.
+            The club ships with a shared TMDB key, so real posters, movie search, and the live
+            now-playing board work out of the box. Paste your own free key from
+            <strong> themoviedb.org</strong> (Settings → API) to use your personal quota instead —
+            it stays in your browser only.
           </p>
           <div className="row-gap">
             <input
@@ -94,7 +95,7 @@ export function Settings({ onClose }: { onClose: () => void }) {
             />
             <button className="btn" onClick={saveKey}>{saved ? 'Saved ✓' : 'Save'}</button>
           </div>
-          {getTmdbKey() && <p className="muted">✅ Key set — posters load on the fly and Discover gains TMDB search. Reload to refresh artwork everywhere.</p>}
+          <p className="muted">✅ TMDB active — posters load on the fly, Discover searches all of TMDB, and Matinees shows this week’s real releases.</p>
         </section>
 
         <section className="card">

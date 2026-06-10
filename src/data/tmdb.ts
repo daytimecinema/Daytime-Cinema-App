@@ -10,13 +10,21 @@ import { Film } from './catalog';
 const KEY_STORE = 'mfc-tmdb-key';
 const POSTER_CACHE = 'mfc-poster-cache-v1';
 
+/**
+ * The club's shared TMDB key. TMDB v3 keys are free-tier and made to be
+ * used from the browser; this one is public by nature of shipping in a
+ * static site and can be regenerated at themoviedb.org any time.
+ * Members can override it in Settings (stored locally only).
+ */
+const DEFAULT_KEY = '5d0aee37a3db2a8e2da09d4988896ac3';
+
 export const IMG_BASE = 'https://image.tmdb.org/t/p/w342';
 
 export function getTmdbKey(): string {
   try {
-    return localStorage.getItem(KEY_STORE) ?? '';
+    return localStorage.getItem(KEY_STORE) || DEFAULT_KEY;
   } catch {
-    return '';
+    return DEFAULT_KEY;
   }
 }
 
@@ -52,16 +60,26 @@ export interface TmdbResult {
   vote: number; // 0–10
 }
 
-export async function searchTmdb(query: string): Promise<TmdbResult[]> {
-  const data = await tmdb('/search/movie', { query, include_adult: 'false' });
-  return (data.results ?? []).slice(0, 12).map((r: any) => ({
+function mapResult(r: any): TmdbResult {
+  return {
     tmdbId: r.id,
     title: r.title,
     year: r.release_date ? +r.release_date.slice(0, 4) : 0,
     posterUrl: r.poster_path ? IMG_BASE + r.poster_path : null,
     overview: r.overview ?? '',
     vote: r.vote_average ?? 0,
-  }));
+  };
+}
+
+export async function searchTmdb(query: string): Promise<TmdbResult[]> {
+  const data = await tmdb('/search/movie', { query, include_adult: 'false' });
+  return (data.results ?? []).slice(0, 12).map(mapResult);
+}
+
+/** Movies actually in US theaters right now — drives the Matinees board. */
+export async function nowPlayingTmdb(): Promise<TmdbResult[]> {
+  const data = await tmdb('/movie/now_playing', { region: 'US' });
+  return (data.results ?? []).slice(0, 10).map(mapResult);
 }
 
 function loadCache(): Record<string, string> {

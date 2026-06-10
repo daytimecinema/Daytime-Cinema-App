@@ -49,12 +49,21 @@ export interface Showtime {
   time: string;
 }
 
-/** Deterministic daily program: each theater shows a rotating slice of the catalog, matinee slots only. */
-export function dailyProgram(dateKey: string): Showtime[] {
+/**
+ * Deterministic daily program: each theater shows a rotating slice of the
+ * catalog, matinee slots only. Pass `nowPlaying` (real in-theater titles
+ * from TMDB) to program the three film houses with current releases; the
+ * stage house always plays curated filmed theater.
+ */
+export function dailyProgram(dateKey: string, nowPlaying?: Film[]): Showtime[] {
   const shows: Showtime[] = [];
   for (const theater of THEATERS) {
     const stageHouse = theater.id === 'gilded-curtain';
-    const pool = FILMS.filter((f) => (stageHouse ? f.kind === 'stage' : f.kind === 'film'));
+    const pool = stageHouse
+      ? FILMS.filter((f) => f.kind === 'stage')
+      : nowPlaying && nowPlaying.length > 0
+        ? nowPlaying
+        : FILMS.filter((f) => f.kind === 'film');
     const seed = hashStr(theater.id + dateKey);
     const count = 3 + (seed % 2); // 3–4 titles per house per day
     for (let i = 0; i < count; i++) {

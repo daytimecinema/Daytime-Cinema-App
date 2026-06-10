@@ -262,6 +262,10 @@ select.search option, select.chip option { background: var(--slate); color: var(
 .seat.taken { background: var(--ink); color: #4a5663; cursor: not-allowed; text-decoration: line-through; }
 .seat.mine { background: var(--green); border-color: var(--green); color: var(--ink); font-size: 0.85rem; font-weight: 700; }
 
+.partner-links { font-size: 0.74rem; color: var(--text); display: flex; gap: 8px; flex-wrap: wrap; align-items: baseline; }
+.ext { color: var(--blue); text-decoration: none; font-weight: 600; }
+.ext:hover { color: var(--white); }
+
 .ticket-stub { display: flex; align-items: center; gap: 12px; border-style: dashed; }
 .ticket-stub strong { color: var(--white); }
 .stub-notch { width: 14px; height: 14px; background: var(--ink); border: 1px solid var(--line); border-radius: 50%; }
