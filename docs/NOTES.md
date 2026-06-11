@@ -11,7 +11,7 @@
 ## Setup checklist (do in this order)
 | # | Task | Where | Status | Unlocks |
 |---|---|---|---|---|
-| 1 | MovieGlu free dev account | developer.movieglu.com | ☐ ~10 min | Real showtimes near members (filterable to pre-5PM) |
+| 1 | MovieGlu evaluation key | **api-registration.movieglu.com** (form lives on the developer subdomain, easy to miss from their main site) | ☐ ~10 min | Real showtimes near members (filterable to pre-5PM). Eval tier: free, one country, small request quota — fine for building/demoing. Production is paid (custom pricing, "low prices for startups" — get a quote before launch) |
 | 2 | Fandango affiliate application | impact.com | ☐ days to approve | Commission per chain ticket |
 | 3 | Atom Tickets affiliate | Impact/CJ | ☐ | Second affiliate stream — A/B against Fandango |
 | 4 | AMC vendor key request | developers.amctheatres.com | ☐ weeks, manual | AMC showtimes + ticket URLs |

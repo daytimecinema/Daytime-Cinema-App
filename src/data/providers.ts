@@ -57,7 +57,7 @@ export const PROVIDERS: ProviderInfo[] = [
       { label: 'x-api-key', cfg: CFG.movieGluKey, placeholder: 'from developer.movieglu.com' },
       { label: 'Authorization', cfg: CFG.movieGluAuth, placeholder: 'Basic …' },
     ],
-    setup: 'Free dev account at developer.movieglu.com — they email sandbox credentials, then production on request.',
+    setup: 'Request a free evaluation key at api-registration.movieglu.com (the form is on the developer subdomain, not their main site). Credentials arrive by email; eval tier is limited to one country with a small request quota. Production is paid — custom pricing, startup rates on request.',
     configured: () => !!(getCfg(CFG.movieGluKey) && getCfg(CFG.movieGluClient)),
   },
   {
