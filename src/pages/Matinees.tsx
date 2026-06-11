@@ -5,6 +5,7 @@ import { filmFromTmdb, nowPlayingTmdb } from '../data/tmdb';
 import { ticketLinks, movieGluNowShowing, INDIE_PROGRAM } from '../data/providers';
 import { dailyProgram, takenSeats, todayKey, MATINEE_PRICE, Showtime, THEATERS } from '../data/theaters';
 import { Poster } from '../components/Poster';
+import { RoomHeader } from '../components/Room';
 
 const ROWS = ['A', 'B', 'C', 'D', 'E', 'F'];
 const COLS = [1, 2, 3, 4, 5, 6, 7, 8];
@@ -66,15 +67,11 @@ export function Matinees() {
 
   return (
     <div className="page">
-      <header className="page-head">
-        <h1>🎟️ Matinee Ticket Portal</h1>
-        <p className="muted">
-          Daylight shows only — every screening ends before 5 PM. Every ticket earns 200 reel points and a collector card.
-          {livePool ? ' Now playing is live from TMDB this week.' : ''}
-          {mgCount ? ` MovieGlu live: ${mgCount} films showing nearby.` : ''}
-          {' '}Seeing it at a chain instead? Use the ticket links, then upload your stub in Earn for 150 pts.
-        </p>
-      </header>
+      <RoomHeader
+        scene="boxoffice"
+        sign="BOX OFFICE"
+        sub={`Daylight shows only — every screening ends before 5 PM. Tickets earn 200 points and a collector card.${livePool ? ' Now playing is live from TMDB this week.' : ''}${mgCount ? ` MovieGlu live: ${mgCount} films nearby.` : ''} Seeing it at a chain? Use the ticket links, then upload your stub at Concessions for 150 pts.`}
+      />
 
       {confirmed && (
         <div className="card success" onClick={() => setConfirmed(null)}>
@@ -120,6 +117,13 @@ export function Matinees() {
                 );
               }),
             )}
+          </div>
+          <div className="pay-row muted">
+            Pay with:
+            <label className="pay-opt"><input type="radio" checked readOnly /> Club demo wallet</label>
+            <label className="pay-opt disabled" title="Stripe checkout activates with indie partner #1">
+              <input type="radio" disabled /> 💳 Card via Stripe — soon
+            </label>
           </div>
           <div className="row-between">
             <span>{seats.length} seat{seats.length === 1 ? '' : 's'} · ${(seats.length * MATINEE_PRICE).toFixed(2)}</span>

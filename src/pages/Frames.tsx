@@ -4,6 +4,7 @@ import { MAX_GUESSES, puzzleForDate } from '../data/frames';
 import { todayKey } from '../data/theaters';
 import { useClub } from '../state/store';
 import { Poster } from '../components/Poster';
+import { RoomHeader } from '../components/Room';
 
 export function Frames() {
   const club = useClub();
@@ -41,13 +42,11 @@ export function Frames() {
 
   return (
     <div className="page">
-      <header className="page-head">
-        <h1>🖼️ Six Frames</h1>
-        <p className="muted">
-          One film hides behind six frames. Each wrong guess reveals the next frame.
-          Solve it for up to 100 reel points — and the film’s collector card.
-        </p>
-      </header>
+      <RoomHeader
+        scene="screening"
+        sign="SCREENING ROOM"
+        sub="Lights down. One film hides behind six frames — each wrong guess rolls the next one. Up to 100 points and the film’s card."
+      />
 
       <div
         className="frame-still"

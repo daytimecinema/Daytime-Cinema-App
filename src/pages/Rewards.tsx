@@ -2,6 +2,8 @@ import { useRef, useState } from 'react';
 import { EARN_RULES, REWARDS } from '../data/rewards';
 import { THEATERS } from '../data/theaters';
 import { useClub } from '../state/store';
+import { RoomHeader } from '../components/Room';
+import { Mascot } from '../components/Mascot';
 
 export function Rewards() {
   const club = useClub();
@@ -25,14 +27,18 @@ export function Rewards() {
 
   return (
     <div className="page">
-      <header className="page-head">
-        <h1>💰 Watch to Earn</h1>
-        <p className="muted">Every matinee, watch, and puzzle pays you back in reel points.</p>
-      </header>
+      <RoomHeader
+        scene="concessions"
+        sign="CONCESSIONS"
+        sub="Step right up — every matinee, watch, and puzzle pays you back in reel points."
+      />
 
       <div className="card points-hero">
-        <span className="points-big">{club.points.toLocaleString()}</span>
-        <span className="muted">reel points · day {club.streak} streak 🔥</span>
+        <div className="points-hero-mascot"><Mascot pose="popcorn" size={92} /></div>
+        <div>
+          <span className="points-big">{club.points.toLocaleString()}</span>
+          <span className="muted">reel points · day {club.streak} streak 🔥</span>
+        </div>
       </div>
 
       {toast && (

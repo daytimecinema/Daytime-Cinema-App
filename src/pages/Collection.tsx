@@ -3,6 +3,7 @@ import { FILMS, Film, RARITY_LABEL, RARITY_ORDER } from '../data/catalog';
 import { PACK_COST, PACK_SIZE } from '../data/rewards';
 import { useClub } from '../state/store';
 import { Poster, RarityBadge } from '../components/Poster';
+import { RoomHeader } from '../components/Room';
 
 export function Collection() {
   const club = useClub();
@@ -18,13 +19,11 @@ export function Collection() {
 
   return (
     <div className="page">
-      <header className="page-head">
-        <h1>🃏 Card Binder</h1>
-        <p className="muted">
-          Every film you watch, every matinee you attend, and every puzzle you solve adds a card.
-          Collect all {total} — duplicates raise a card’s shine count.
-        </p>
-      </header>
+      <RoomHeader
+        scene="gallery"
+        sign="THE GALLERY"
+        sub={`The club’s memorabilia wall. Every watch, matinee, and puzzle win hangs a card — collect all ${total}; duplicates raise a card’s shine count.`}
+      />
 
       <div className="card row-between binder-bar">
         <div>

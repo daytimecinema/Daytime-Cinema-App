@@ -3,6 +3,7 @@ import { FILMS, filmById } from '../data/catalog';
 import { filmFromTmdb, getTmdbKey, searchTmdb, TmdbResult } from '../data/tmdb';
 import { useClub } from '../state/store';
 import { Poster, RarityBadge, Stars } from '../components/Poster';
+import { RoomHeader } from '../components/Room';
 
 type KindFilter = 'all' | 'film' | 'stage';
 
@@ -53,10 +54,11 @@ export function Discover() {
 
   return (
     <div className="page">
-      <header className="page-head">
-        <h1>🔍 Discover</h1>
-        <p className="muted">Find your next film or filmed stage show, queue it up, and earn points when you log the watch.</p>
-      </header>
+      <RoomHeader
+        scene="posterwall"
+        sign="COMING SOON"
+        sub="The poster corridor — find your next film or filmed stage show, queue it up, and earn points when you log the watch."
+      />
 
       {toast && (
         <div className="card success" onClick={() => setToast(null)}>
